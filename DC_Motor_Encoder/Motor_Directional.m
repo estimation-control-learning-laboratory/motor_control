@@ -1,4 +1,4 @@
-% === SERIAL SETUP ===
+% SERIAL SETUP
 port = "COM5";
 baudRate = 9600;
 serialObj = serialport(port, baudRate);
@@ -7,13 +7,12 @@ configureTerminator(serialObj, "CR/LF");
 flush(serialObj); 
 pause(2);
 
-% === PARAMETERS ===
+% PARAMETERS
 duration = 60;
 amplitude = 127;
 samplingRate = 30;
 dt = 1 / samplingRate;
 
-% === FIGURE 1: Omega and PWM vs Time ===
 clf;
 figure(1);
 
@@ -33,7 +32,7 @@ ylabel('PWM Value');
 title('PWM Signal Over Time');
 grid on;
 
-% === FIGURE 2: Real-time Step Response: PWM vs Omega ===
+% FIGURE 2: PWM vs Omega
 figure(2);
 hStepPlot = plot(nan, nan, 'bo', 'LineWidth', 1.5);
 xlabel('PWM Value');
@@ -41,7 +40,7 @@ ylabel('Omega (rad/s)');
 title('Real-Time Step Response: PWM vs Omega');
 grid on;
 
-% === USER DATA INIT ===
+% USER DATA INIT
 startTime = tic;
 serialObj.UserData = struct( ...
     "OmegaData", [], ...
@@ -59,7 +58,6 @@ serialObj.UserData = struct( ...
 
 configureCallback(serialObj, "terminator", @(src, event) readMotorOmega(src, event));
 
-% === MAIN LOOP: Send PWM, Record ===
 timeVals = [];
 pwmVals = [];
 
@@ -78,14 +76,14 @@ while toc(startTime) < duration
         dir = 0;
     end
 
-    % Update PWM tracking for step response
+    % Updates PWM tracking for step response
     serialObj.UserData.CurrentPWM = pwmVal;
 
-    % Send PWM command
+    % Sends PWM command
     setMotor(serialObj, dir, abs(pwmVal));
     pause(dt);
 
-    % Save for PWM vs Time plot
+    % Saves for PWM vs Time plot
     timeVals(end+1) = t;
     pwmVals(end+1) = pwmVal;
     set(hPWM, 'XData', timeVals, 'YData', pwmVals);
@@ -97,13 +95,13 @@ setMotor(serialObj, 0, 0);
 pause(1);
 clear serialObj;
 
-% === Function to Send PWM Command ===
+% Function to Send PWM Command
 function setMotor(serialObj, dir, pwmVal)
     command = sprintf('%d,%d', dir, pwmVal);
     writeline(serialObj, command);
 end
 
-% === Callback to Read Incoming Omega ===
+% Callback to Read Incoming Omeg
 function readMotorOmega(src, ~)
     data = readline(src);
     parsedData = str2double(data);
